@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.4.4/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+      <div class="container">
+         <table class="table table-bordered table-striped table-hover">
+             <thead>
+               <tr>
+                   <th>Id</th>
+                   <th>Firstname</th>
+                   <th>Lastname</th>
+               </tr>
+             </thead>
+             <tbody>
+                   <tr v-for="user in users" class="clickable-row" v-on:click="select(user)" v-bind:class="{'success': (user._id == selected) }">
+                       <th> {{ user._id }}</th>
+                       <th>{{ user.firstname }}</th>
+                       <th>{{ user.lastname }}</th>
+                   </tr>
+             </tbody>
+         </table>
+      </div>
+      <div class="container">
+          <form class="form-inline">
+              <div class="form-group">
+                  <label for="firstname">firstname:</label>
+                  <input v-model="firstname" type="text" class="form-control" id="firstname">
+              </div>
+              <div class="form-group">
+                  <label for="lastname">lastname:</label>
+                  <input v-model="lastname" type="text" class="form-control" id="lastname">
+              </div>
+              <button v-on:click="addOne">Add</button>
+              <button v-on:click="deleteOne">Delete</button>
+          </form>
+      </div>
+  </div>
+</body>
+<script>
+    var vm = new Vue({
+        el: '#app',
+
+        data: {
+            users: [],
+            firstname: '',
+            lastname: '',
+            selected: null
+        },
+
+        created: function() {
+            this.getAll();
+        },
+
+        methods: {
+            getAll: function () {
+                var vm = this;
+
+                axios.get('http://localhost:8080/api/users')
+                    .then(function (response) {
+                        vm.users = response.data;
+                        console.log(vm.users);
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+            },
+
+            addOne: function () {
+               var vm = this;
+
+               axios.post('http://localhost:8080/api/users', {firstname: vm.firstname, lastname: vm.lastname})
+                   .then(function (response) {
+                       console.log(response);
+                   }).catch(function (error) {
+                       console.log(error.message);
+                   })
+               },
+
+            select: function (user) {
+                var vm = this;
+
+                vm.selected = user._id;
+
+                console.log(user.firstname + " " + user.lastname + " " + user._id);
+            },
+
+            deleteOne: function () {
+                var vm = this;
+
+                axios.delete('http://localhost:8080/api/users/' + vm.selected)
+                    .then(function (response) {
+
+                        console.log(response);
+
+                    }).catch(function (error) {
+
+                        console.log(error.message);
+                })
+            }
+
+        }
+    })
+</script>
+</html>
